@@ -63,6 +63,8 @@ Routes.post("/createshopkeeper", async (req, resp) => {
     return HandleResponse(resp, 500, "Internal server error", null, error);
   }
 });
+
+//common login route for all posts
 Routes.post("/login", async (req, resp) => {
   try {
     const { email, password } = req.body;
@@ -73,15 +75,17 @@ Routes.post("/login", async (req, resp) => {
 
     if (password === result.password) {
       if (!result.service)
-        return HandleResponse(resp, 401, "Your Service is Dissabled");
-
+        return HandleResponse(resp, 401, "Your service is disabled");
       const payload = { id: result._id };
       const token = jwt.sign(payload, process.env.JSON_SECRET_KEY);
-      return HandleResponse(resp, 202, "login successfully", token);
+      return HandleResponse(resp, 202, "login successfully", {
+        token,
+        role: result.role,
+      });
     }
     return HandleResponse(resp, 401, "Invalid Password");
   } catch (error) {
-    return HandleResponse(resp, 500, "Internal server error", null, error);
+    return HandleResponse(resp, 500, "Internal Server error", null, error);
   }
 });
 
@@ -120,6 +124,16 @@ Routes.post("/disable", async (req, resp) => {
   } catch (error) {
     return HandleResponse(resp, 500, "Internal server error", null, error);
   }
+});
+
+//route for checking user details
+Routes.post("/fetchuserdetails", checkUserDetails, async (req, resp) => {
+  const payload = { id: req.user._id };
+  const token = jwt.sign(payload, process.env.JSON_SECRET_KEY);
+  return HandleResponse(resp, 202, "Login Successfully", {
+    role: req.user.role,
+    token,
+  });
 });
 
 //Product Routes

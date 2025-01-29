@@ -1,16 +1,21 @@
-import React from 'react'
-import ShopkeeperHeader from '../Components/ShopkeeperHeader'
-import AddExcelData from '../Components/AddExcelData'
-import ReviewExcelData from '../Components/ReviewExcelData'
+import React, { useState } from "react";
+import ShopkeeperHeader from "../Components/ShopkeeperHeader";
+import AddExcelData from "../Components/AddExcelData";
+import ReviewExcelData from "../Components/ReviewExcelData";
 
 const UploadExcel = () => {
+  const [data, setdata] = useState([]);
+  console.log(data);
   return (
     <div>
-      <ShopkeeperHeader/>
-      <AddExcelData/>
-      {/* <ReviewExcelData/> */}
+      <ShopkeeperHeader />
+      {data && data.length !== 0 ? (
+        <ReviewExcelData data={data} />
+      ) : (
+        <AddExcelData fun={setdata} />
+      )}
     </div>
-  )
-}
+  );
+};
 
-export default UploadExcel
+export default UploadExcel;

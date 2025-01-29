@@ -1,6 +1,7 @@
 const HandleResponse = require("../HandleResponse/handleResponse");
 const jwt = require("jsonwebtoken");
 const { User } = require("../Model/UserModel/userModel");
+
 const checkUserDetails = async (req, resp, next) => {
   const token = req.header("Authorization");
   if (!token) return HandleResponse(resp, 404, "Token is not found");
