@@ -90,10 +90,10 @@ Routes.post("/login", async (req, resp) => {
 });
 
 //SuperAdmin Routes
-Routes.post("/enable", async (req, resp) => {
+Routes.put("/enable", checkUserDetails, async (req, resp) => {
   try {
     const { id } = req.body;
-    if (!id) return HandleResponse(resp, 404, "Plz select the user");
+    if (!id) return HandleResponse(resp, 404, "Plz Select the user");
 
     const existinguser = await User.findOne({ _id: id });
     if (!existinguser) return HandleResponse(resp, 404, "User is not found");
@@ -104,14 +104,13 @@ Routes.post("/enable", async (req, resp) => {
     );
     return HandleResponse(resp, 202, "Service is enabled", result);
   } catch (error) {
-    return HandleResponse(resp, 500, "Internal server error", null, error);
+    return HandleResponse(resp, 500, "Internal Server error", null, error);
   }
 });
-
-Routes.post("/disable", async (req, resp) => {
+Routes.put("/disable", checkUserDetails, async (req, resp) => {
   try {
     const { id } = req.body;
-    if (!id) return HandleResponse(resp, 404, "Plz select the user");
+    if (!id) return HandleResponse(resp, 404, "Plz Select the user");
 
     const existinguser = await User.findOne({ _id: id });
     if (!existinguser) return HandleResponse(resp, 404, "User is not found");
@@ -122,7 +121,20 @@ Routes.post("/disable", async (req, resp) => {
     );
     return HandleResponse(resp, 202, "Service is disabled", result);
   } catch (error) {
-    return HandleResponse(resp, 500, "Internal server error", null, error);
+    return HandleResponse(resp, 500, "Internal Server error", null, error);
+  }
+});
+
+//route for getting all users without including superadmin
+Routes.get("/getallusers", checkUserDetails, async (req, resp) => {
+  try {
+    const users = await User.find({ role: { $ne: "Superadmin" } }).select(
+      "-password"
+    );
+    if (users.length === 0) return HandleResponse(resp, 400, "No user found");
+    return HandleResponse(resp, 202, "Users fetched successfully", users);
+  } catch (error) {
+    return HandleResponse(resp, 500, "Internal Server error", null, error);
   }
 });
 
@@ -296,6 +308,75 @@ Routes.put("/updateproduct/:id", checkUserDetails, async (req, resp) => {
     );
   } catch (error) {
     return HandleResponse(resp, 500, "Internal Server error", error);
+  }
+});
+
+//route and constant for creating multi-product using excel file
+const validateObjectKeys = (object, schema) => {
+  const schemaKeys = Object.keys(schema.paths).filter(
+    (key) => key !== "__v" && key !== "_id" && key !== "createdat"
+  );
+  const objectKeys = Object.keys(object);
+
+  for (const key of schemaKeys) {
+    if (
+      !object.hasOwnProperty(key) ||
+      object[key] === null ||
+      object[key] === ""
+    )
+      return "The key " + key + " is missing or empty.";
+  }
+
+  for (const key of objectKeys) {
+    if (!schemaKeys.includes(key))
+      return "The key " + key + " is not declared in the schema.";
+  }
+
+  return null;
+};
+Routes.post("/addmultipleproducts", checkUserDetails, async (req, resp) => {
+  try {
+    const { items } = req.body;
+    if (!Array.isArray(items) || items.length === 0)
+      return HandleResponse(
+        resp,
+        400,
+        "Invalid input. Provide an array of items."
+      );
+    const updateditems = items.map((item) => {
+      return { ...item, userid: req.user._id };
+    });
+    const errors = [];
+    updateditems.map(async (item, index) => {
+      const validationError = validateObjectKeys(item, Product.schema);
+      if (validationError) errors.push({ index, error: validationError });
+
+      const existingproduct = await Product.findOne({ model: item.model });
+      if (existingproduct)
+        errors.push({
+          index,
+          error: "The modelNumber " + item.model + " already exists.",
+        });
+    });
+
+    if (errors.length > 0)
+      return HandleResponse(
+        resp,
+        400,
+        "Validation errors occurred.",
+        null,
+        errors
+      );
+
+    const result = await Product.insertMany(updateditems);
+    return HandleResponse(
+      resp,
+      201,
+      "All products are added successfully",
+      result
+    );
+  } catch (error) {
+    return HandleResponse(resp, 500, "Internal Server Error", null, error);
   }
 });
 module.exports = Routes;

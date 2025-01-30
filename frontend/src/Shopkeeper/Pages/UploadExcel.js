@@ -5,7 +5,6 @@ import ReviewExcelData from "../Components/ReviewExcelData";
 
 const UploadExcel = () => {
   const [data, setdata] = useState([]);
-  console.log(data);
   return (
     <div>
       <ShopkeeperHeader />
