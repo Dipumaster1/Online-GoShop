@@ -1,10 +1,5 @@
 const mongoose = require("mongoose");
-const productschema = new mongoose.Schema({
-  userid: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: process.env.MONGODB_PRODUCT_COLLECTION,
-    required: true,
-  },
+const OrderedItemSchema = new mongoose.Schema({
   name: {
     type: String,
     required: true,
@@ -12,7 +7,6 @@ const productschema = new mongoose.Schema({
   model: {
     type: String,
     required: true,
-    unique: true,
   },
   description: {
     type: String,
@@ -38,16 +32,21 @@ const productschema = new mongoose.Schema({
     type: Number,
     required: true,
   },
-  stock: {
+  subtotal: {
     type: Number,
     required: true,
-    default: 0,
   },
-  createdat:{
-    type:Date,
-    default:Date.now
-  }
+  quantity: {
+    type: Number,
+    required: true,
+  },
+  createdat: {
+    type: Date,
+    default: Date.now,
+  },
 });
-
-const Product = mongoose.model(process.env.MONGODB_PRODUCT_COLLECTION, productschema);
-module.exports = Product;
+const OrderedItems = mongoose.model(
+  process.env.MONGODB_ORDEREDITEM_COLLECTION,
+  OrderedItemSchema
+);
+module.exports = OrderedItems;

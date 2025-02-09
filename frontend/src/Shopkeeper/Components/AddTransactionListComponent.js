@@ -1,48 +1,135 @@
-import React from 'react'
-import Title from "../../CommonComponents/Title"
-import Footer from "../../CommonComponents/Footer"
+import React, { useState } from "react";
+import Title from "../../CommonComponents/Title";
+import Footer from "../../CommonComponents/Footer";
+import { useNavigate } from "react-router-dom";
 const AddTransactionListComponent = () => {
-return(
-<div className="main-content">
-  <div className="page-content">
-    <div className="container-fluid">
-      <Title Name="New Transaction"/>
-      <div className="row">
-        <div className="col-xl-12">
-          <div className="card">
-            <div className="card-body">
-              <form>
-                <div className="mb-3">
-                  <label className="form-label" htmlFor="desc">Description</label>
-                  <textarea className="form-control" id="desc" placeholder="Enter Description" rows={3} defaultValue={""} />
-                </div>
-                <div className="row">
-                  <div className="col-lg-6">
+  const navigate = useNavigate();
+  const [loading, setloading] = useState(false);
+  const [obj, setobj] = useState({});
+  const set = (event) =>
+    setobj({ ...obj, [event.target.name]: event.target.value });
+  const submit = async (e) => {
+    try {
+      e.preventDefault();
+      setloading(true);
+      const userinfo = JSON.parse(localStorage.getItem("Userinfo"));
+      const customerinfo = JSON.parse(localStorage.getItem("Customerinfo"));
+      if (
+        !userinfo ||
+        !userinfo.Authorization ||
+        !customerinfo ||
+        !customerinfo.id
+      ) {
+        localStorage.clear();
+        alert("Unauthorised user");
+        window.history.replaceState(null, null, "/");
+        return navigate("/", { replace: true });
+      }
+      const response = await fetch(
+        "http://localhost:4010/api/addPayment/" + customerinfo.id,
+        {
+          method: "post",
+          body: JSON.stringify(obj),
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: userinfo.Authorization,
+          },
+        }
+      );
+      const result = await response.json();
+      alert(result?.message);
+      if (response.status === 201) {
+        navigate("/TransactionList");
+      }
+    } catch (error) {
+      alert("Something went wrong. Try again later");
+    } finally {
+      return setloading(false);
+    }
+  };
+  return (
+    <div className="main-content">
+      <div className="page-content">
+        <div className="container-fluid">
+          <Title Name="New Transaction" />
+          <div className="row">
+            <div className="col-xl-12">
+              <div className="card">
+                <div className="card-body">
+                  <form onSubmit={submit}>
                     <div className="mb-3">
-                      <label htmlFor="debit" className="form-label">Debit</label>
-                      <input id="Debit" name="Debit" placeholder="Debit" type="text" value={"Debit"} readOnly className="form-control" />
+                      <label className="form-label" htmlFor="desc">
+                        Description
+                      </label>
+                      <textarea
+                        className="form-control"
+                        onChange={set}
+                        name="Description"
+                        id="desc"
+                        placeholder="Enter Description"
+                        rows={3}
+                        defaultValue={""}
+                      />
                     </div>
-                  </div>
-                  <div className="col-lg-6">
-                    <div className="mb-3">
-                      <label className="form-label" htmlFor="price">Amount</label>
-                      <input id="price" name="price" placeholder="Enter Amount" type="number" className="form-control" />
+                    <div className="row">
+                      <div className="col-lg-6">
+                        <div className="mb-3">
+                          <label htmlFor="Reciept No" className="form-label">
+                            Reciept No
+                          </label>
+                          <input
+                            id="Reciept No"
+                            name="RecieptNo"
+                            onChange={set}
+                            placeholder="Reciept No"
+                            type="text"
+                            className="form-control"
+                          />
+                        </div>
+                      </div>
+                      <div className="col-lg-6">
+                        <div className="mb-3">
+                          <label className="form-label" htmlFor="payment">
+                            payment
+                          </label>
+                          <input
+                            id="payment"
+                            name="payment"
+                            onChange={set}
+                            placeholder="Enter payment"
+                            type="number"
+                            className="form-control"
+                          />
+                        </div>
+                      </div>
                     </div>
+                  </form>
+                  <div className="hstack gap-2 mt-4">
+                    <button
+                      type="submit"
+                      onClick={submit}
+                      disabled={loading}
+                      className="btn btn-primary"
+                    >
+                      {loading ? "Paying..." : "Pay Now"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => navigate("/Shopkeeper")}
+                      className="btn btn-light"
+                    >
+                      Discard
+                    </button>
                   </div>
                 </div>
-              </form>
-              <div className="hstack gap-2 mt-4">
-                <button type="submit" className="btn btn-primary">Pay Now</button>
-                <button type="button" className="btn btn-light">Discard</button>
               </div>
             </div>
           </div>
         </div>
       </div>
+      <Footer />
     </div>
-  </div>
-  <Footer/>
-</div>
-)}
+  );
+};
 
-export default AddTransactionListComponent
+export default AddTransactionListComponent;

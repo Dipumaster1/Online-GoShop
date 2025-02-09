@@ -12,7 +12,7 @@ const SignInComponent = () => {
     try {
       e.preventDefault();
       setloading(true);
-      const response = await fetch("http://localhost:3010/api/login", {
+      const response = await fetch("http://localhost:4010/api/login", {
         body: JSON.stringify(obj),
         method: "post",
         headers: {
@@ -52,7 +52,7 @@ const SignInComponent = () => {
   const fetchuserdetails = async (token, remember) => {
     try {
       const response = await fetch(
-        "http://localhost:3010/api/fetchuserdetails",
+        "http://localhost:4010/api/fetchuserdetails",
         {
           method: "post",
           headers: {

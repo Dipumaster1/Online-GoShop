@@ -1,9 +1,13 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Footer from "../../CommonComponents/Footer";
 import Title from "../../CommonComponents/Title";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
-const InvoiceDetails = () => {
+const InvoiceDetails = ({ data }) => {
+  const navigate = useNavigate();
+  const [customer, setcustomer] = useState({});
+  const [shopkeeper, setshopkeeper] = useState({});
   const downloadInvoice = () => {
     const invoiceElement = document.getElementById("invoice-content"); // Target the invoice container
     html2canvas(invoiceElement, { scale: 2 }).then((canvas) => {
@@ -15,6 +19,56 @@ const InvoiceDetails = () => {
       pdf.save("Invoice.pdf"); // Download as Invoice.pdf
     });
   };
+  const today = new Date(data?.result?.createdAt);
+  const FutureDate = new Date();
+  FutureDate.setDate(today.getDate() + 7);
+  const getCustomer = async (token, id) => {
+    try {
+      const response = await fetch(
+        "http://localhost:4010/api/getCustomer/" + id,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: token,
+          },
+        }
+      );
+      const result = await response.json();
+      if (response.status === 202) setcustomer(result?.data);
+      else alert(result?.message);
+    } catch (error) {
+      console.log(error);
+      alert("Something went wrong. Try again later");
+    }
+  };
+  const getShopkeeper = async (token) => {
+    try {
+      const response = await fetch("http://localhost:4010/api/getShopkeeper", {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: token,
+        },
+      });
+      const result = await response.json();
+      if (response.status === 202) setshopkeeper(result?.data);
+      else alert(result?.message);
+    } catch (error) {
+      console.log(error);
+      alert("Something went wrong. Try again later");
+    }
+  };
+  useEffect(() => {
+    const getdata = async () => {
+      const userinfo = JSON.parse(localStorage.getItem("Userinfo"));
+      if (userinfo && userinfo.Authorization) {
+        await getCustomer(userinfo.Authorization, data?.result?.customerId);
+        return await getShopkeeper(userinfo.Authorization);
+      }
+      localStorage.clear();
+      return navigate("/");
+    };
+    getdata();
+  }, []);
   return (
     <div className="main-content">
       <div className="page-content">
@@ -25,15 +79,20 @@ const InvoiceDetails = () => {
               <div className="card" id="demo">
                 <div className="card-body" id="invoice-content">
                   <div className="row p-4">
-                    <div className="col-lg-9">
-                      <h3 className="fw-bold mb-4">Invoice: Lezeco-00335 </h3>
+                    <div className="col-lg-8">
+                      <h3 className="fw-bold mb-4">
+                        Invoice To: {customer?.name}{" "}
+                      </h3>
                       <div className="row g-4">
                         <div className="col-lg-6 col-6">
                           <p className="text-muted mb-1 text-uppercase fw-medium fs-14">
                             Invoice No
                           </p>
                           <h5 className="fs-16 mb-0">
-                            #VL<span id="invoice-no">25000355</span>
+                            #
+                            <span id="invoice-no">
+                              {data?.result?.InvoiceNo}
+                            </span>
                           </h5>
                         </div>
                         <div className="col-lg-6 col-6">
@@ -41,9 +100,24 @@ const InvoiceDetails = () => {
                             Date
                           </p>
                           <h5 className="fs-16 mb-0">
-                            <span id="invoice-date">23 Nov, 2021</span>{" "}
+                            <span id="invoice-date">
+                              {new Date(
+                                data?.result?.createdAt
+                              ).toLocaleDateString("en-GB", {
+                                day: "2-digit",
+                                month: "short",
+                                year: "numeric",
+                              })}
+                            </span>
+                            ,{" "}
                             <small className="text-muted" id="invoice-time">
-                              02:36PM
+                              {new Date(
+                                data?.result?.createdAt
+                              ).toLocaleTimeString("en-US", {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                                hour12: true,
+                              })}
                             </small>
                           </h5>
                         </div>
@@ -52,10 +126,10 @@ const InvoiceDetails = () => {
                             Payment Status
                           </p>
                           <span
-                            className="badge bg-success-subtle text-success fs-11"
+                            className="badge bg-danger-subtle text-danger fs-11"
                             id="payment-status"
                           >
-                            Paid
+                            Pending
                           </span>
                         </div>
                         <div className="col-lg-6 col-6">
@@ -63,12 +137,15 @@ const InvoiceDetails = () => {
                             Total Amount
                           </p>
                           <h5 className="fs-16 mb-0">
-                            $<span id="total-amount">755.96</span>
+                            ₹
+                            <span id="total-amount">
+                              {data?.result?.TotalAmount}/-
+                            </span>
                           </h5>
                         </div>
                       </div>
                     </div>
-                    <div className="col-lg-3">
+                    <div className="col-lg-4">
                       <div className="mt-sm-0 mt-3">
                         <div className="mb-4">
                           <img
@@ -85,34 +162,31 @@ const InvoiceDetails = () => {
                           />
                         </div>
                         <h6 className="text-muted text-uppercase fw-semibold">
-                          Address
+                          From :-
                         </h6>
                         <p className="text-muted mb-1" id="address-details">
-                          California, United States
+                          {shopkeeper?.name}
                         </p>
-                        <p className="text-muted mb-1" id="zip-code">
-                          <span>Zip-code:</span> 90201
+                        <p className="text-muted mb-1" id="address-details">
+                          {shopkeeper?.address}, {shopkeeper?.city},{" "}
+                          {shopkeeper?.state}
                         </p>
                         <h6>
-                          <span className="text-muted fw-normal">Email:</span>
-                          <span id="email">Invoika@themesbrand.com</span>
-                        </h6>
-                        <h6>
-                          <span className="text-muted fw-normal">Website:</span>{" "}
+                          <span className="text-muted fw-normal"></span>{" "}
                           <a
-                            href="https://themesbrand.com/"
+                            href={`mailto:${shopkeeper?.email}`}
                             className="link-primary"
                             target="_blank"
                             id="website"
                           >
-                            www.themesbrand.com
+                            {shopkeeper?.email}
                           </a>
                         </h6>
                         <h6 className="mb-0">
                           <span className="text-muted fw-normal">
                             Contact No:{" "}
                           </span>
-                          <span id="contact-no"> +(01) 234 6789</span>
+                          <span id="contact-no">{shopkeeper?.phone}</span>
                         </h6>
                       </div>
                     </div>
@@ -125,50 +199,36 @@ const InvoiceDetails = () => {
                             Billing Address
                           </h6>
                           <p className="fw-medium mb-2" id="billing-name">
-                            David Nichols
+                            {customer?.name}
                           </p>
                           <p
                             className="text-muted mb-1"
                             id="billing-address-line-1"
                           >
-                            305 S San Gabriel Blvd
+                            {customer?.address}
                           </p>
                           <p className="text-muted mb-1">
                             <span>Phone: +</span>
-                            <span id="billing-phone-no">(123) 456-7890</span>
-                          </p>
-                          <p className="text-muted mb-0">
-                            <span>Tax: </span>
-                            <span id="billing-tax-no">12-3456789</span>{" "}
+                            <span id="billing-phone-no">{customer?.phone}</span>
                           </p>
                         </div>
-                        <div className="col-6">
-                          <h6 className="text-muted text-uppercase fw-semibold mb-3">
-                            Shipping Address
-                          </h6>
-                          <p className="fw-medium mb-2" id="shipping-name">
-                            David Nichols
-                          </p>
-                          <p
-                            className="text-muted mb-1"
-                            id="shipping-address-line-1"
-                          >
-                            305 S San Gabriel Blvd
-                          </p>
-                          <p className="text-muted mb-1">
-                            <span>Phone: +</span>
-                            <span id="shipping-phone-no">(123) 456-7890</span>
-                          </p>
-                        </div>
+                        <div className="col-6"></div>
                       </div>
                     </div>
                     <div className="col-lg-3">
                       <h6 className="text-muted text-uppercase fw-semibold mb-3">
                         Total Amount
                       </h6>
-                      <h3 className="fw-bold mb-2">$755.96</h3>
+                      <h3 className="fw-bold mb-2">
+                        ₹{data?.result?.TotalAmount}/-
+                      </h3>
                       <span className="badge bg-success-subtle text-success fs-12">
-                        Due Date: 23 Des, 2022
+                        Due Date:{" "}
+                        {FutureDate.toLocaleDateString("en-GB", {
+                          day: "2-digit",
+                          month: "short",
+                          year: "numeric",
+                        })}
                       </span>
                     </div>
                   </div>
@@ -183,70 +243,38 @@ const InvoiceDetails = () => {
                                   #
                                 </th>
                                 <th scope="col">Product Details</th>
-                                <th scope="col">Rate</th>
+                                <th scope="col">Price</th>
                                 <th scope="col">Quantity</th>
+                                <th scope="col">Tax</th>
+                                <th scope="col">Discount</th>
                                 <th scope="col" className="text-end">
                                   Amount
                                 </th>
                               </tr>
                             </thead>
                             <tbody id="products-list">
-                              <tr>
-                                <th scope="row">01</th>
-                                <td className="text-start">
-                                  <span className="fw-medium">
-                                    Sweatshirt for Men (Pink)
-                                  </span>
-                                  <p className="text-muted mb-0">
-                                    Graphic Print Men &amp; Women Sweatshirt
-                                  </p>
-                                </td>
-                                <td>$119.99</td>
-                                <td>02</td>
-                                <td className="text-end">$239.98</td>
-                              </tr>
-                              <tr>
-                                <th scope="row">02</th>
-                                <td className="text-start">
-                                  <span className="fw-medium">
-                                    Noise NoiseFit Endure Smart Watch
-                                  </span>
-                                  <p className="text-muted mb-0">
-                                    32.5mm (1.28 Inch) TFT Color Touch Display
-                                  </p>
-                                </td>
-                                <td>$94.99</td>
-                                <td>01</td>
-                                <td className="text-end">$94.99</td>
-                              </tr>
-                              <tr>
-                                <th scope="row">03</th>
-                                <td className="text-start">
-                                  <span className="fw-medium">
-                                    350 ml Glass Grocery Container
-                                  </span>
-                                  <p className="text-muted mb-0">
-                                    Glass Grocery Container (Pack of 3, White)
-                                  </p>
-                                </td>
-                                <td>$24.99</td>
-                                <td>01</td>
-                                <td className="text-end">$24.99</td>
-                              </tr>
-                              <tr>
-                                <th scope="row">04</th>
-                                <td className="text-start">
-                                  <span className="fw-medium">
-                                    Fabric Dual Tone Living Room Chair
-                                  </span>
-                                  <p className="text-muted mb-0">
-                                    Chair (White)
-                                  </p>
-                                </td>
-                                <td>$340.00</td>
-                                <td>01</td>
-                                <td className="text-end">$340.00</td>
-                              </tr>
+                              {data?.ordereditems?.map((item, index) => {
+                                return (
+                                  <tr key={index}>
+                                    <th scope="row">{index + 1}</th>
+                                    <td className="text-start">
+                                      <span className="fw-medium">
+                                        {item?.name}
+                                      </span>
+                                      <p className="text-muted mb-0">
+                                        {item?.description}
+                                      </p>
+                                    </td>
+                                    <td>₹{item?.price}/-</td>
+                                    <td>{item?.quantity}</td>
+                                    <td>{item?.tax}%</td>
+                                    <td>{item?.discount}%</td>
+                                    <td className="text-end">
+                                      ₹{item?.price * item?.quantity}/-
+                                    </td>
+                                  </tr>
+                                );
+                              })}
                             </tbody>
                           </table>
                         </div>
@@ -258,57 +286,47 @@ const InvoiceDetails = () => {
                             <tbody>
                               <tr>
                                 <td>Sub Total</td>
-                                <td className="text-end">$699.96</td>
+                                <td className="text-end">
+                                  ₹
+                                  {data?.ordereditems?.reduce(
+                                    (acc, obj) => acc + obj.price,
+                                    0
+                                  )}
+                                </td>
                               </tr>
                               <tr>
-                                <td>Estimated Tax (12.5%)</td>
-                                <td className="text-end">$44.99</td>
+                                <td>Estimated Tax (+)</td>
+                                <td className="text-end">
+                                  ₹{data?.result?.TotalTax}
+                                </td>
                               </tr>
                               <tr>
                                 <td>
                                   Discount{" "}
-                                  <small className="text-muted">
-                                    (Invoika15)
-                                  </small>
+                                  <small className="text-muted">(-)</small>
                                 </td>
-                                <td className="text-end">- $53.99</td>
-                              </tr>
-                              <tr>
-                                <td>Shipping Charge</td>
-                                <td className="text-end">$65.00</td>
+                                <td className="text-end">
+                                  ₹{data?.result?.TotalDiscount}
+                                </td>
                               </tr>
                               <tr className="border-top border-top-dashed fs-15">
                                 <th scope="row">Total Amount</th>
-                                <th className="text-end">$755.96</th>
+                                <th className="text-end">
+                                  ₹{data?.result?.TotalAmount}/-
+                                </th>
                               </tr>
                             </tbody>
                           </table>
                         </div>
                         <div className="mt-3">
                           <h6 className="text-muted text-uppercase fw-semibold mb-3">
-                            Payment Details:
+                            Pending Balance:
                           </h6>
-                          <p className="text-muted mb-1">
-                            Payment Method:{" "}
-                            <span className="fw-medium" id="payment-method">
-                              Mastercard
-                            </span>
-                          </p>
-                          <p className="text-muted mb-1">
-                            Card Holder:{" "}
-                            <span className="fw-medium" id="card-holder-name">
-                              David Nichols
-                            </span>
-                          </p>
-                          <p className="text-muted mb-1">
-                            Card Number:{" "}
-                            <span className="fw-medium" id="card-number">
-                              xxx xxxx xxxx 1234
-                            </span>
-                          </p>
                           <p className="text-muted">
-                            Total Amount: <span className="fw-medium">$ </span>
-                            <span id="card-total-amount">755.96</span>
+                            Total Amount: <span className="fw-medium">₹</span>
+                            <span id="card-total-amount">
+                              {customer?.balance}/-
+                            </span>
                           </p>
                         </div>
                         <div className="mt-4">

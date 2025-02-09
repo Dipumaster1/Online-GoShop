@@ -9,7 +9,7 @@ const UploadExcel = () => {
     <div>
       <ShopkeeperHeader />
       {data && data.length !== 0 ? (
-        <ReviewExcelData data={data} />
+        <ReviewExcelData setdata={setdata} data={data} />
       ) : (
         <AddExcelData fun={setdata} />
       )}

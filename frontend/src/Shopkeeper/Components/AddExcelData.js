@@ -23,6 +23,14 @@ const AddExcelData = ({ fun }) => {
       fun(array);
     };
   };
+  const download = () => {
+    const link = document.createElement("a");
+    link.href = "/assets/format.xlsx"; // Ensure this file exists in public/assets
+    link.setAttribute("download", "format.xlsx");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
   return (
     <div className="main-content">
       <div className="page-content">
@@ -72,7 +80,7 @@ const AddExcelData = ({ fun }) => {
                               <div className="flex-grow-1">
                                 <div className="pt-1">
                                   <h5 className="fs-14 mb-1" data-dz-name>
-                                    &nbsp;
+                                    &nbsp;Download Excel Format
                                   </h5>
                                   <p
                                     className="fs-13 text-muted mb-0"
@@ -88,8 +96,9 @@ const AddExcelData = ({ fun }) => {
                                 <button
                                   data-dz-remove
                                   className="btn btn-sm btn-danger"
+                                  onClick={download}
                                 >
-                                  Delete
+                                  Download
                                 </button>
                               </div>
                             </div>
@@ -97,14 +106,6 @@ const AddExcelData = ({ fun }) => {
                         </li>
                       </ul>
                     </form>
-                    <div className="hstack gap-2 mt-4">
-                      <button type="submit" className="btn btn-primary">
-                        Save
-                      </button>
-                      <button type="button" className="btn btn-light">
-                        Discard
-                      </button>
-                    </div>
                   </div>
                 </div>
               </div>

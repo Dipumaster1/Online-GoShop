@@ -1,8 +1,36 @@
-import React from 'react'
-import { Link } from 'react-router-dom'
+import React, { useEffect, useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import Footer from "../../CommonComponents/Footer"
 import Title from "../../CommonComponents/Title"
 const TransactionListComponent = () => {
+  const[transactions,settransactions] =useState([])
+  const navigate=useNavigate()
+  useEffect(()=>{
+    const getdata=async()=>{
+      const userinfo=JSON.parse(localStorage.getItem("Userinfo"))
+      const customerinfo=JSON.parse(localStorage.getItem("Customerinfo"))
+      if(userinfo && userinfo.Authorization && customerinfo && customerinfo.id) return await getalltransactions(userinfo.Authorization,customerinfo.id)
+      localStorage.clear()
+      return navigate("/")
+      }
+      getdata()
+  },[])
+  const getalltransactions=async(token,id)=>{
+    try {
+        const response=await fetch("http://localhost:4010/api/getAllTransactions/"+id,{
+            headers:{
+                "Content-Type":"application/json",
+                "Authorization":token
+            }
+        })
+        const result=await response.json()
+        if(response.status===202) settransactions(result.data)
+        else alert(result?.message)
+    } catch (error) {
+        console.log(error);
+        alert("Something went wrong. Try again later")
+    }
+   }
 return(
 <div className="main-content">
   <div className="page-content">
@@ -40,97 +68,26 @@ return(
                     <tr className="text-muted text-uppercase">
                       <th scope="col">Transaction Id</th>
                       <th scope="col">Date</th>
-                      <th scope="col">Description</th>
                       <th scope="col">Credit / Debit</th>
-                      <th scope="col">Amount</th>
-                      <th scope="col" style={{width: '12%'}}>Attachment</th>
+                      <th scope="col">Amount/Payment</th>
+                      <th scope="col">Tax</th>
+                      <th scope="col">Discount</th>
+                      <th scope="col">Profit</th>
                     </tr>
                   </thead>
                   <tbody>
-                    <tr>
-                      <td>#BR2150</td>
-                      <td>20 Sep, 2022</td>
-                      <td>Maintenance</td>
-                      <td><span className="badge bg-success-subtle text-success  p-2">Credit</span></td>
-                      <td>$1200.00</td>
-                      <td>N/A</td>
-                    </tr>
-                    <tr>
-                      <td>#BR2151</td>
-                      <td>12 Arl, 2022</td>
-                      <td>Flight Booking</td>
-                      <td><span className="badge bg-success-subtle text-success  p-2">Credit</span></td>
-                      <td>$3600.00</td>
-                      <td>N/A</td>
-                    </tr>
-                    <tr>
-                      <td>#BR2152</td>
-                      <td>28 Mar, 2022</td>
-                      <td>Office Rent</td>
-                      <td><span className="badge bg-danger-subtle text-danger  p-2">Debit</span></td>
-                      <td>$800.00</td>
-                      <td>N/A</td>
-                    </tr>
-                    <tr>
-                      <td>#BR2153</td>
-                      <td>23 Aug, 2022</td>
-                      <td>Salary Payment</td>
-                      <td><span className="badge bg-success-subtle text-success  p-2">Credit</span></td>
-                      <td>$1600.00</td>
-                      <td>
-                        <button type="button" className="btn btn-soft-success btn-sm btn-icon fs-14">
-                          <i className="las la-download fs-18" />
-                        </button>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>#BR2154</td>
-                      <td>18 Sep, 2022</td>
-                      <td>Salary Payment</td>
-                      <td><span className="badge bg-danger-subtle text-danger  p-2">Debit</span></td>
-                      <td>$3200.00</td>
-                      <td>N/A</td>
-                    </tr>
-                    <tr>
-                      <td>#BR2155</td>
-                      <td>12 Feb, 2022</td>
-                      <td>Maintenance</td>
-                      <td><span className="badge bg-success-subtle text-success  p-2">Credit</span></td>
-                      <td>$900.00</td>
-                      <td>
-                        <button type="button" className="btn btn-soft-success btn-sm btn-icon fs-14">
-                          <i className="las la-download fs-18" />
-                        </button>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>#BR2156</td>
-                      <td>30 Nov, 2022</td>
-                      <td>Online Product</td>
-                      <td><span className="badge bg-success-subtle text-success  p-2">Credit</span></td>
-                      <td>$200.00</td>
-                      <td>
-                        <button type="button" className="btn btn-soft-success btn-sm btn-icon fs-14">
-                          <i className="las la-download fs-18" />
-                        </button>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>#BR2157</td>
-                      <td>23 Sep, 2022</td>
-                      <td>Office Rent</td>
-                      <td><span className="badge bg-danger-subtle text-danger  p-2">Debit</span></td>
-                      <td>$1200.00</td>
-                      <td>N/A</td>
-                    </tr>
-                    <tr>
-                      <td>#BR2158</td>
-                      <td>16 Aug, 2022</td>
-                      <td>Online Product</td>
-                      <td><span className="badge bg-success-subtle text-success  p-2">Credit</span></td>
-                      <td>$1800.00</td>
-                      <td>N/A</td>
-                    </tr>
+                    { transactions && transactions.length!==0 && transactions?.map((transaction,index) => (
+                        <tr key={index}>
+                          <td>{transaction.InvoiceNo || transaction.RecieptNo}</td>
+                          <td>{new Date(transaction.createdAt).toLocaleDateString()}</td>
+                          <td>{transaction.paymentType}</td>
+                          <td>₹{transaction.TotalAmount || transaction.payment}/-</td>
+                          <td>{transaction.TotalTax ? `₹ ${transaction.TotalTax} /-`: " - "}</td>
+                          <td>{transaction.TotalDiscount ? `₹${transaction.TotalDiscount}/-`:" - " }</td>
+                          <td>{transaction.TotalProfit ? `₹${transaction.TotalProfit}/-` :" - "}</td>
+                        </tr>
+                      ))
+                    }
                   </tbody>
                 </table>
               </div>
