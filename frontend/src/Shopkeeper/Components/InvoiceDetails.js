@@ -288,10 +288,7 @@ const InvoiceDetails = ({ data }) => {
                                 <td>Sub Total</td>
                                 <td className="text-end">
                                   ₹
-                                  {data?.ordereditems?.reduce(
-                                    (acc, obj) => acc + obj.price,
-                                    0
-                                  )}
+                                  {data?.result?.Subtotal}
                                 </td>
                               </tr>
                               <tr>

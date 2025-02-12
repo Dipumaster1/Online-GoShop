@@ -57,29 +57,10 @@ const NewInvoice = ({ setinvoices }) => {
       }
       if (!customer._id) return alert("Choose your Customer");
       if (items.length === 0) return alert("Add products to your invoice");
-      const ordereditems = items.map(
-        ({
-          name,
-          model,
-          price,
-          tax,
-          description,
-          company,
-          discount,
-          rate,
-          quantity,
-        }) => ({
-          name,
-          model,
-          price,
-          tax,
-          description,
-          company,
-          discount,
-          rate,
-          quantity,
-        })
-      );
+      const ordereditems = items.map((item) => ({
+        id: item._id,
+        quantity: item.quantity,
+      }));
       const response = await fetch(
         "http://localhost:4010/api/createInvoice/" + customer._id,
         {

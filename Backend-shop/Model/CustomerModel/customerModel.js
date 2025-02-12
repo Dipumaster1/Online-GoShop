@@ -1,4 +1,5 @@
 const mongoose=require("mongoose")
+require("dotenv").config()
 const customerSchema=new mongoose.Schema({
     customerof:{
         type:mongoose.Schema.Types.ObjectId,
@@ -10,7 +11,8 @@ const customerSchema=new mongoose.Schema({
         required:true
     },
     phone:{
-        type:Number,
+        type:String,
+        required:true
     },
     address:{
         type:String,
@@ -25,5 +27,6 @@ const customerSchema=new mongoose.Schema({
         default:Date.now
     }
 })
+customerSchema.index({customerof:1,phone:1},{unique:true})
 const Customer=mongoose.model(process.env.MONGODB_CUSTOMER_COLLECTION,customerSchema)
 module.exports=Customer
