@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios"
 const ChooseCustomerModal = (props) => {
   const [data, setdata] = useState([]);
   const [search, setsearch] = useState("");
@@ -7,7 +8,7 @@ const ChooseCustomerModal = (props) => {
   const navigate = useNavigate();
   const getallcustomers = async (token) => {
     try {
-      const response = await fetch(
+      const response = await axios.get(
         "http://localhost:4010/api/getAllCustomers",
         {
           headers: {
@@ -16,11 +17,9 @@ const ChooseCustomerModal = (props) => {
           },
         }
       );
-      const result = await response.json();
-      if (response.status === 202) setdata(result.data);
-      else alert(result?.message);
+      if (response.status === 202) setdata(response?.data?.data);
+      else alert(response?.data?.message);
     } catch (error) {
-      console.log(error);
       alert("Something went wrong. Try again later");
     }
   };

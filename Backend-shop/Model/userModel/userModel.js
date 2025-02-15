@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-// require("dotenv").config();
+require("dotenv").config();
 const BaseSchema = new mongoose.Schema(
   {
     name: {
@@ -38,7 +38,7 @@ const BaseSchema = new mongoose.Schema(
     role: {
       type: String,
       required: true,
-      enum: ["shopkeeper", "executive"], // Restrict values to "shopkeeper" or "executive"
+      enum: ["Shopkeeper", "Executive"], // Restrict values to "shopkeeper" or "executive"
     },
     createdAt: {
       type: Date,
@@ -56,7 +56,8 @@ const ShopkeeperSchema = new mongoose.Schema({});
 //For Executive purpose
 const ExecutiveSchema = new mongoose.Schema({
   executiveof: {
-    type: String,
+    type:mongoose.Schema.Types.ObjectId,
+    ref:process.env.MONGODB_USER_COLLECTION,
     required: true,
   },
 });

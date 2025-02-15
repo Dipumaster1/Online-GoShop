@@ -4,6 +4,7 @@ import Footer from "../../CommonComponents/Footer";
 import Title from "../../CommonComponents/Title";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
+import axios from "axios";
 const InvoiceDetails = ({ data }) => {
   const navigate = useNavigate();
   const [customer, setcustomer] = useState({});
@@ -24,7 +25,7 @@ const InvoiceDetails = ({ data }) => {
   FutureDate.setDate(today.getDate() + 7);
   const getCustomer = async (token, id) => {
     try {
-      const response = await fetch(
+      const response = await axios.get(
         "http://localhost:4010/api/getCustomer/" + id,
         {
           headers: {
@@ -33,27 +34,23 @@ const InvoiceDetails = ({ data }) => {
           },
         }
       );
-      const result = await response.json();
-      if (response.status === 202) setcustomer(result?.data);
-      else alert(result?.message);
+      if (response.status === 202) setcustomer(response?.data?.data);
+      else alert(response?.data?.message);
     } catch (error) {
-      console.log(error);
       alert("Something went wrong. Try again later");
     }
   };
   const getShopkeeper = async (token) => {
     try {
-      const response = await fetch("http://localhost:4010/api/getShopkeeper", {
+      const response = await axios.get("http://localhost:4010/api/getShopkeeper", {
         headers: {
           "Content-Type": "application/json",
           Authorization: token,
         },
       });
-      const result = await response.json();
-      if (response.status === 202) setshopkeeper(result?.data);
-      else alert(result?.message);
+      if (response.status === 202) setshopkeeper(response?.data?.data);
+      else alert(response?.data?.message);
     } catch (error) {
-      console.log(error);
       alert("Something went wrong. Try again later");
     }
   };

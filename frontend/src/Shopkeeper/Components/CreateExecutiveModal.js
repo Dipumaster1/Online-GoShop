@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios"
 
 const CreateExecutiveModal = (props) => {
   const [displayotpsection, setdisplayotpsection] = useState(false);
@@ -11,7 +12,7 @@ const CreateExecutiveModal = (props) => {
   const navigate = useNavigate();
   const getallcityandstate = async (token) => {
     try {
-      const response = await fetch(
+      const response = await axios.get(
         "http://localhost:4010/api/getAllCitiesAndStates",
         {
           headers: {
@@ -20,11 +21,9 @@ const CreateExecutiveModal = (props) => {
           },
         }
       );
-      const result = await response.json();
-      if (response.status === 202) setdata(result.data);
-      else alert(result?.message);
+      if (response.status === 202) setdata(response?.data?.data);
+      else alert(response?.data?.message);
     } catch (error) {
-      console.log(error);
       alert("Something went wrong. Try again later");
     }
   };
@@ -51,23 +50,20 @@ const CreateExecutiveModal = (props) => {
         window.history.replaceState(null, null, "/");
         return navigate("/", { replace: true });
       }
-      const response = await fetch(
-        "http://localhost:4010/api/verifyExecutive",
+      const response = await axios.post(
+        "http://localhost:4010/api/verifyExecutive",obj,
         {
-          method: "post",
-          body: JSON.stringify(obj),
+          // body: JSON.stringify(obj),
           headers: {
             "Content-Type": "application/json",
             Authorization: userinfo.Authorization,
           },
         }
       );
-      const result = await response.json();
-      alert(result?.message);
+      alert(response?.data?.message);
       if (response.status === 202) setdisplayotpsection(true);
       setotploading(false);
     } catch (error) {
-      console.log(error);
       alert("Something went wrong. Try again later");
     }
   };
@@ -82,27 +78,26 @@ const CreateExecutiveModal = (props) => {
         window.history.replaceState(null, null, "/");
         return navigate("/", { replace: true });
       }
-      const response = await fetch(
-        "http://localhost:4010/api/createExecutive",
+      const response = await axios.post(
+        "http://localhost:4010/api/createExecutive",{...obj,otp},
         {
-          method: "post",
-          body: JSON.stringify({ ...obj, otp }),
+          // body: JSON.stringify({ ...obj, otp }),
           headers: {
             "Content-Type": "application/json",
             Authorization: userinfo.Authorization,
           },
         }
       );
-      const result = await response.json();
-      alert(result?.message);
+      alert(response?.data?.message);
       if (response.status === 201) {
         props.fun(false);
         props.getallexecutives(userinfo.Authorization);
       }
-      setloading(false);
+      // setloading(false);
     } catch (error) {
-      console.log(error);
       alert("Something went wrong. Try again later");
+    }finally{
+      setloading(false)
     }
   };
   return (

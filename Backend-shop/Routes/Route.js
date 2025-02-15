@@ -160,9 +160,8 @@ Routes.put("/disable", checkUserDetails, async (req, resp) => {
 //route for getting all users without including superadmin
 Routes.get("/getallusers", checkUserDetails, async (req, resp) => {
   try {
-    const users = await User.find({ role: { $ne: "Superadmin" } }).select(
-      "-password"
-    );
+    const users = await User.aggregate([{ $match: { role: "Shopkeeper" } },{ $lookup: {from: "users",localField: "_id",foreignField: "executiveof",as: "executives"}}, {$project: {password: 0, "executives.password": 0}}]).exec();
+    // const users = await User.find({role:{$ne:'Superadmin'}}).select("-password")
     if (users.length === 0) return HandleResponse(resp, 400, "No user found");
     return HandleResponse(resp, 202, "Users fetched successfully", users);
   } catch (error) {
@@ -568,7 +567,6 @@ async function generateInvoiceNumber(shopkeeperId) {
 
    return newInvoiceNumber;
 }
-
 const validateordereditems = (object) => {
  if(Object.keys(object).length===0) return "Product Detail not found";
  if(!object.id || object.id==="" || object.id==null || !mongoose.isValidObjectId(object.id)) return "Product id is invalid";
@@ -749,4 +747,82 @@ Routes.post("/addPayment/:id", checkUserDetails, async (req, resp) => {
   }
 });
 
+// dashboard routes using different method
+// Routes.get('/dashboard',checkUserDetails, async (req, resp) => {
+//   try {
+//     const OrderedItems= req.body
+//       const orders = await OrderedItems.find();
+
+//       const totalSales = orders.reduce((sum, order) => sum + order.amount, 0);
+//       const totalProfit = orders.reduce((sum, order) => sum + order.profit, 0);
+//       const totalDiscount = orders.reduce((sum, order) => sum + order.discount, 0);
+//       const totalAmount = orders.reduce((sum, order) => sum + order.amount, 0);
+//       const totalTax = orders.reduce((sum, order) => sum + order.tax, 0);
+//       const amountReceived = orders.reduce((sum, order) => sum + order.amountReceived, 0);
+//       const salesGenerated = orders.reduce((sum, order) => sum + order.salesGenerated, 0);
+
+//       resp.json({
+//           totalSales,
+//           totalProfit,
+//           totalDiscount,
+//           totalAmount,
+//           totalTax,
+//           amountReceived,
+//           salesGenerated
+//       });
+//   } catch (error) {
+//     return HandleResponse(resp,500,"Internal server Error",null,error)
+//   }
+// });
+// Routes.get('/latest-invoices',checkUserDetails, async (req, resp) => {
+//   try {
+//       const OrderedItems=req.body
+//       const latestInvoices = await OrderedItems.find().sort({ date: -1 }).limit(7);
+//       resp.json(latestInvoices);
+//   } catch (error) {
+//     return HandleResponse(resp, 500, "Internal Server Error", null, error);
+//   }
+// });
+
+//DashBoard Routes
+Routes.get("/getSalesInfo",checkUserDetails,async(req,resp)=>{
+  try {
+    const allInvoices=await Invoice.find({shopkeeperId:req.user._id}).select("TotalAmount TotalTax TotalDiscount TotalProfit Subtotal")
+    let totalSales=0
+    let totalTax=0
+    let totalDiscount=0
+    let totalProfit=0
+    let totalSalesWithoutTaxAndDiscount=0
+    for(const invoice of allInvoices){
+      totalSales+=invoice.TotalAmount
+      totalTax+=invoice.TotalTax
+      totalProfit+=invoice.TotalProfit
+      totalDiscount+=invoice.TotalDiscount
+      totalSalesWithoutTaxAndDiscount+=invoice.Subtotal
+    }
+    const allPayments=await Payment.find({shopkeeperId:req.user._id}).select("payment")
+    const totalPayment=allPayments.reduce((acc,payment) => acc+payment.payment,0)
+    return HandleResponse(resp,202,"Data Analysed Successfully",{totalSales,totalTax,totalDiscount,totalProfit,totalSalesWithoutTaxAndDiscount,totalPayment})
+  } catch (error) {
+    return HandleResponse(resp,500,"Internal Server Error",null,error)
+  }
+})
+Routes.get("/latestInvoices",checkUserDetails,async(req,resp)=>{
+  try {
+  const allInvoices=await Invoice.find({shopkeeperId:req.user._id}).sort({ createdAt: -1 }).limit(7).populate("customerId","name");
+  if(!allInvoices || allInvoices.length===0) return HandleResponse(resp,404,"No latest invoices found")
+  return HandleResponse(resp,202,"Latest invoices fetched successfully",allInvoices)
+  } catch (error) {
+   return HandleResponse(resp,500,"Internal Server Error",null,error)
+  }  
+})
+Routes.get("/latestTransactions",checkUserDetails,async(req,resp)=>{
+try {
+  const latestTransactions=await Transaction.find({shopkeeperId:req.user._id}).sort({createdAt:-1}).limit(10)
+  if(!latestTransactions || latestTransactions.length===0) return HandleResponse(resp,404,"No latest transactions found")
+  return HandleResponse(resp,202,"Latest transactions fetched successfully",latestTransactions)
+} catch (error) {
+  return HandleResponse(resp,500,"Internal Server Error",null,error)
+}
+})
 module.exports = Routes;

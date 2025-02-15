@@ -3,6 +3,7 @@ import AddCustomerModal from "./AddCustomerModal";
 import { Link, useNavigate } from "react-router-dom";
 import Title from "../../CommonComponents/Title";
 import Footer from "../../CommonComponents/Footer";
+import axios from "axios";
 const CustomerComponent = () => {
   const [CustomerToggle, setCustomerToggle] = useState(false);
   const navigate = useNavigate();
@@ -13,7 +14,7 @@ const CustomerComponent = () => {
   const customersperpage = 5;
   const getallcustomers = async (token) => {
     try {
-      const response = await fetch(
+      const response = await axios.get(
         "http://localhost:4010/api/getAllCustomers",
         {
           headers: {
@@ -22,11 +23,9 @@ const CustomerComponent = () => {
           },
         }
       );
-      const result = await response.json();
-      if (response.status === 202) setdata(result.data);
-      else alert(result?.message);
+      if (response.status === 202) setdata(response?.data?.data);
+      else alert(response?.data?.message);
     } catch (error) {
-      console.log(error);
       alert("Something went wrong. Try again later");
     }
   };

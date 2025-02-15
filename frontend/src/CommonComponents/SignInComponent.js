@@ -1,3 +1,4 @@
+import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 const SignInComponent = () => {
@@ -12,30 +13,29 @@ const SignInComponent = () => {
     try {
       e.preventDefault();
       setloading(true);
-      const response = await fetch("http://localhost:4010/api/login", {
-        body: JSON.stringify(obj),
-        method: "post",
+      const response = await axios.post("http://localhost:4010/api/login",obj, {
+        // body: JSON.stringify(obj),
         headers: {
           "Content-Type": "application/json",
-        },
+        }
       });
-      const result = await response.json();
-      alert(result?.message);
+      alert(response?.data?.message); 
+
       if (response.status === 202) {
         localStorage.clear();
         localStorage.setItem(
           "Userinfo",
           JSON.stringify({
-            Authorization: result.data.token,
+            Authorization: response?.data?.data?.token,
             Rememberme: rememberme,
           })
         );
-        navigate("/" + result.data.role);
+        navigate("/" + response?.data?.data?.role);
       }
-      setloading(false);
     } catch (error) {
-      console.log(error);
       alert("Something went wrong. Try again later.");
+    }finally{
+      setloading(false)
     }
   };
   useEffect(() => {
@@ -51,28 +51,26 @@ const SignInComponent = () => {
   }, []);
   const fetchuserdetails = async (token, remember) => {
     try {
-      const response = await fetch(
+      const response = await axios.get(
         "http://localhost:4010/api/fetchuserdetails",
         {
-          method: "post",
           headers: {
             "Content-Type": "application/json",
             Authorization: token,
           },
         }
       );
-      const result = await response.json();
-      alert(result?.message);
+      alert(response?.data?.message);
       if (response.status === 202) {
         localStorage.clear();
         localStorage.setItem(
           "Userinfo",
           JSON.stringify({
-            Authorization: result.data.token,
+            Authorization: response?.data?.data?.token,
             Rememberme: remember,
           })
         );
-        navigate("/" + result?.data?.role, { replace: true });
+        navigate("/" + response?.data?.data?.role, { replace: true });
       }
     } catch (error) {
       console.log(error);
@@ -83,20 +81,20 @@ const SignInComponent = () => {
     <div className="account-pages">
       <div className="container">
         <div className="row justify-content-center">
-          <div className="col-md-11">
-            <div className="auth-full-page-content d-flex min-vh-100 py-sm-5 py-4 justify-content-center">
+          <div className="col-md-10">
+            <div className="auth-full-page-content d-flex min-vh-100 py-sm-2 py-4 justify-content-center">
               <div className="customcss">
                 <div className="d-flex flex-column h-100 py-0 py-xl-4">
                   <div className="text-center mb-5">
                     <a>
                       <span className="logo-lg">
-                        <img src="assets/images/logo-dark.png" height={21} />
+                        <img src="assets/images/GoShop-logo.png" height={150}/>
                       </span>
                     </a>
                   </div>
                   <div className="card my-auto ">
                     <div className="col-lg-12">
-                      <div className="p-lg-5 p-4">
+                      <div className="p-lg-3 p-10">
                         <div className="text-center">
                           <h5 className="mb-0">Welcome Back!</h5>
                           <p className="text-muted mt-2">

@@ -23,20 +23,20 @@ const ShopkeeperHeader = () => {
                 <div className="navbar-brand-box horizontal-logo">
                   <Link to={"/Dashboard"} className="logo logo-dark">
                     <span className="logo-sm">
-                      <img src="assets/images/logo-sm.png" height={22} />
+                      <img src="assets/images/logo-sm.png" height={212} />
                     </span>
                     <span className="logo-lg">
-                      <img src="assets/images/logo-dark.png" height={21} />
+                      <img src="assets/images/GoShop-logo.png" height={120} />
                     </span>
                   </Link>
                   <Link to={"/Dashboard"} className="logo logo-light">
                     <span className="logo-sm">
-                      <img src="assets/images/logo-sm.png" height={22} />
+                      <img src="assets/images/logo-sm.png" height={212} />
                     </span>
                     <span className="logo-lg">
-                      <img src="assets/images/logo-light.png" height={21} />
+                      <img src="assets/images/GoShop-logo.png" height={212} />
                     </span>
-                  </Link>
+                  </Link> 
                 </div>
                 <button
                   onClick={() => setToggle(!Toggle)}

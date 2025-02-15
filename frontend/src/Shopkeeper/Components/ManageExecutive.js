@@ -3,6 +3,7 @@ import Footer from "../../CommonComponents/Footer";
 import Title from "../../CommonComponents/Title";
 import CreateExecutiveModal from "./CreateExecutiveModal";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 const ManageExecutive = () => {
   const [Toggle, setToggle] = useState(false);
@@ -14,7 +15,7 @@ const ManageExecutive = () => {
   const usersperpage = 5;
   const getallexecutives = async (token) => {
     try {
-      const response = await fetch(
+      const response = await axios.get(
         "http://localhost:4010/api/getAllExecutives",
         {
           headers: {
@@ -23,11 +24,9 @@ const ManageExecutive = () => {
           },
         }
       );
-      const result = await response.json();
-      if (response.status === 202) setdata(result.data);
-      else alert(result?.message);
+      if (response.status === 202) setdata(response?.data?.data);
+      else alert(response?.data?.message);
     } catch (error) {
-      console.log(error);
       alert("Something went wrong. Try again later");
     }
   };
@@ -60,23 +59,20 @@ const ManageExecutive = () => {
         window.history.replaceState(null, null, "/");
         return navigate("/", { replace: true });
       }
-      const response = await fetch(
-        "http://localhost:4010/api/enableExecutive",
+      const response = await axios.put(
+        "http://localhost:4010/api/enableExecutive",{id},
         {
-          method: "put",
-          body: JSON.stringify({ id }),
+          // body: JSON.stringify({ id }),
           headers: {
             "Content-Type": "application/json",
             Authorization: userinfo.Authorization,
           },
         }
       );
-      const result = await response.json();
-      alert(result?.message);
+      alert(response?.data?.message);
       if (response.status === 202)
         await getallexecutives(userinfo.Authorization);
     } catch (error) {
-      console.log(error);
       alert("Something went wrong. Try again later");
     }
   };
@@ -89,23 +85,20 @@ const ManageExecutive = () => {
         window.history.replaceState(null, null, "/");
         return navigate("/", { replace: true });
       }
-      const response = await fetch(
-        "http://localhost:4010/api/disableExecutive",
+      const response = await axios.put(
+        "http://localhost:4010/api/disableExecutive",{id},
         {
-          method: "put",
-          body: JSON.stringify({ id }),
+          // body: JSON.stringify({ id }),
           headers: {
             "Content-Type": "application/json",
             Authorization: userinfo.Authorization,
           },
         }
       );
-      const result = await response.json();
-      alert(result?.message);
+      alert(response?.data?.message);
       if (response.status === 202)
         await getallexecutives(userinfo.Authorization);
     } catch (error) {
-      console.log(error);
       alert("Something went wrong. Try again later");
     }
   };

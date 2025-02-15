@@ -4,6 +4,7 @@ import Footer from "../../CommonComponents/Footer";
 import AddItemModal from "./AddItemModal";
 import ChooseCustomerModal from "./ChooseCustomerModal";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 const NewInvoice = ({ setinvoices }) => {
   const [AddItemToggle, setAddItemToggle] = useState(false);
@@ -61,24 +62,21 @@ const NewInvoice = ({ setinvoices }) => {
         id: item._id,
         quantity: item.quantity,
       }));
-      const response = await fetch(
-        "http://localhost:4010/api/createInvoice/" + customer._id,
+      const response = await axios.post(
+        "http://localhost:4010/api/createInvoice/" + customer._id,{ordereditems},
         {
-          method: "post",
-          body: JSON.stringify({ ordereditems }),
+          // body: JSON.stringify({ ordereditems }),
           headers: {
             "Content-Type": "application/json",
             Authorization: userinfo.Authorization,
           },
         }
       );
-      const result = await response.json();
-      alert(result?.message);
+      alert(response?.data?.message);
       if (response.status === 201) {
-        setinvoices(result.data);
+        setinvoices(response?.data?.data);
       }
     } catch (error) {
-      console.log(error);
       alert("Something went wrong. Please try again");
     } finally {
       return setloading(false);

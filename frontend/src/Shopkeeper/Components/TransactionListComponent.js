@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import Footer from "../../CommonComponents/Footer"
 import Title from "../../CommonComponents/Title"
+import axios from "axios"
 const TransactionListComponent = () => {
   const[transactions,settransactions] =useState([])
   const navigate=useNavigate()
@@ -17,17 +18,15 @@ const TransactionListComponent = () => {
   },[])
   const getalltransactions=async(token,id)=>{
     try {
-        const response=await fetch("http://localhost:4010/api/getAllTransactions/"+id,{
+        const response=await axios.get("http://localhost:4010/api/getAllTransactions/"+id,{
             headers:{
                 "Content-Type":"application/json",
                 "Authorization":token
             }
         })
-        const result=await response.json()
-        if(response.status===202) settransactions(result.data)
-        else alert(result?.message)
+        if(response.status===202) settransactions(response?.data?.data)
+        else alert(response?.data?.message)
     } catch (error) {
-        console.log(error);
         alert("Something went wrong. Try again later")
     }
    }

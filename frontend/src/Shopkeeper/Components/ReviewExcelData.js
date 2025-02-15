@@ -2,6 +2,7 @@ import React from "react";
 import Footer from "../../CommonComponents/Footer";
 import Title from "../../CommonComponents/Title";
 import { useNavigate } from "react-router-dom";
+import axiox from "axios"
 
 const ReviewExcelData = ({ data, setdata }) => {
   const navigate = useNavigate();
@@ -14,22 +15,19 @@ const ReviewExcelData = ({ data, setdata }) => {
         window.history.replaceState(null, null, "/");
         return navigate("/", { replace: true });
       }
-      const response = await fetch(
-        "http://localhost:4010/api/addmultipleproducts",
+      const response = await axiox.post(
+        "http://localhost:4010/api/addmultipleproducts",{items:data},
         {
-          method: "post",
-          body: JSON.stringify({ items: data }),
+          // body: JSON.stringify({ items: data }),
           headers: {
             "Content-Type": "application/json",
             Authorization: userinfo.Authorization,
           },
         }
       );
-      const result = await response.json();
-      alert(result?.message);
+      alert(response?.data?.message);
       if (response.status === 201) navigate("/AllProducts");
     } catch (error) {
-      console.log(error);
       alert("Something went wrong. Try again later.");
     }
   };

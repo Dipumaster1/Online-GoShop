@@ -1,3 +1,4 @@
+import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -8,15 +9,14 @@ const AddItemModal = (props) => {
   const navigate = useNavigate();
   const getallitems = async (token) => {
     try {
-      const response = await fetch("http://localhost:4010/api/getproducts", {
+      const response = await axios.get("http://localhost:4010/api/getproducts", {
         headers: {
           "Content-Type": "application/json",
           Authorization: token,
         },
       });
-      const result = await response.json();
-      if (response.status === 202) setdata(result.data);
-      else alert(result?.message);
+      if (response.status === 202) setdata(response?.data?.data);
+      else alert(response?.data?.message);
     } catch (error) {
       console.log(error);
       alert("Something went wrong. Try again later");

@@ -4,6 +4,7 @@ import Title from "../../CommonComponents/Title";
 import Footer from "../../CommonComponents/Footer";
 import EditProductModal from "./EditProductModal";
 import AddProductModal from "./AddProductModal";
+import axios from "axios";
 const AllProductsComponent = () => {
   const [EditProductToggle, setEditProductToggle] = useState(false);
   const [AddProductToggle, setAddProductToggle] = useState(false);
@@ -41,17 +42,15 @@ const AllProductsComponent = () => {
   }, [data, currentpage]);
   const getallproducts = async (token) => {
     try {
-      const response = await fetch("http://localhost:4010/api/getproducts", {
+      const response = await axios.get("http://localhost:4010/api/getproducts", {
         headers: {
           "Content-Type": "application/json",
           Authorization: token,
         },
       });
-      const result = await response.json();
-      if (response.status === 202) setdata(result.data);
-      else alert(result?.message);
+      if (response.status === 202) setdata(response?.data?.data);
+      else alert(response?.data?.message);
     } catch (error) {
-      console.log(error);
       alert("Something went wrong. Try again later");
     }
   };
@@ -64,23 +63,20 @@ const AllProductsComponent = () => {
         window.history.replaceState(null, null, "/");
         return navigate("/", { replace: true });
       }
-      const response = await fetch(
+      const response = await axios.delete(
         "http://localhost:4010/api/deleteproduct/" + id,
         {
-          method: "delete",
           headers: {
             "Content-Type": "application/json",
             Authorization: userinfo.Authorization,
           },
         }
       );
-      const result = await response.json();
-      alert(result?.message);
+      alert(response?.data?.message);
       if (response.status === 202) {
         await getallproducts(userinfo.Authorization);
       }
     } catch (error) {
-      console.log(error);
       alert("Something went wrong. Try again later.");
     }
   };

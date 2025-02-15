@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import Title from "../../CommonComponents/Title";
 import Footer from "../../CommonComponents/Footer";
 import { useNavigate } from "react-router-dom";
+import axios from "axios"
 const AddTransactionListComponent = () => {
   const navigate = useNavigate();
   const [loading, setloading] = useState(false);
@@ -25,19 +26,17 @@ const AddTransactionListComponent = () => {
         window.history.replaceState(null, null, "/");
         return navigate("/", { replace: true });
       }
-      const response = await fetch(
-        "http://localhost:4010/api/addPayment/" + customerinfo.id,
+      const response = await axios.post(
+        "http://localhost:4010/api/addPayment/" + customerinfo.id,obj,
         {
-          method: "post",
-          body: JSON.stringify(obj),
+          // body: JSON.stringify(obj),
           headers: {
             "Content-Type": "application/json",
             Authorization: userinfo.Authorization,
           },
         }
       );
-      const result = await response.json();
-      alert(result?.message);
+      alert(response?.data?.message);
       if (response.status === 201) {
         navigate("/TransactionList");
       }

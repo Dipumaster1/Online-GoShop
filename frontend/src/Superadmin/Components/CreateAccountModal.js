@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios"
 const CreateAccountModal = (props) => {
   const [displayotpsection, setdisplayotpsection] = useState(false);
   const [otploading, setotploading] = useState(false);
@@ -11,8 +12,8 @@ const CreateAccountModal = (props) => {
   const navigate = useNavigate();
   const getallshopkeepers = async (token) => {
     try {
-      const response = await fetch(
-        "http://localhost:3010/api/getAllShopkeepers",
+      const response = await axios.get(
+        "http://localhost:4010/api/getAllShopkeepers",
         {
           headers: {
             "Content-Type": "application/json",
@@ -20,18 +21,16 @@ const CreateAccountModal = (props) => {
           },
         }
       );
-      const result = await response.json();
-      if (response.status === 202) setshopkeepers(result.data);
-      else alert(result?.message);
+      if (response.status === 202) setshopkeepers(response?.data?.data);
+      else alert(response?.data?.message);
     } catch (error) {
-      console.log(error);
       alert("Something went wrong. Try again later");
     }
   };
   const getallcityandstate = async (token) => {
     try {
-      const response = await fetch(
-        "http://localhost:3010/api/getAllCitiesAndStates",
+      const response = await axios.get(
+        "http://localhost:4010/api/getAllCitiesAndStates",
         {
           headers: {
             "Content-Type": "application/json",
@@ -39,11 +38,9 @@ const CreateAccountModal = (props) => {
           },
         }
       );
-      const result = await response.json();
-      if (response.status === 202) setdata(result.data);
-      else alert(result?.message);
+      if (response.status === 202) setdata(response?.data?.data);
+      else alert(response?.data?.message);
     } catch (error) {
-      console.log(error);
       alert("Something went wrong. Try again later");
     }
   };
@@ -72,22 +69,19 @@ const CreateAccountModal = (props) => {
         window.history.replaceState(null, null, "/");
         return navigate("/", { replace: true });
       }
-      const response = await fetch("http://localhost:3010/api/verifyUserType", {
-        method: "post",
-        body: JSON.stringify(obj),
+      const response = await axios.post("http://localhost:4010/api/verifyUserType",obj, {
+        // body: JSON.stringify(obj),
         headers: {
           "Content-Type": "application/json",
           Authorization: userinfo.Authorization,
         },
       });
-      const result = await response.json();
-      alert(result?.message);
+      alert(response?.data?.message);
       if (response.status === 202) {
         setdisplayotpsection(true);
       }
       setotploading(false);
     } catch (error) {
-      console.log(error);
       alert("Something went wrong. Try again later");
     }
   };
@@ -102,24 +96,24 @@ const CreateAccountModal = (props) => {
         window.history.replaceState(null, null, "/");
         return navigate("/", { replace: true });
       }
-      const response = await fetch("http://localhost:3010/api/createUserType", {
-        method: "post",
-        body: JSON.stringify({ ...obj, otp }),
+      const response = await axios.post("http://localhost:4010/api/createUserType",{ ...obj, otp }, {
+        // body: JSON.stringify({ ...obj, otp }),
         headers: {
           "Content-Type": "application/json",
           Authorization: userinfo.Authorization,
         },
       });
-      const result = await response.json();
-      alert(result?.message);
+      alert(response?.data?.message);
       if (response.status === 201) {
-        props.fun(false);
-        props.getallusers(userinfo.Authorization);
+        props?.fun(false);
+        props?.getallusers(userinfo.Authorization);
       }
-      setloading(false);
+      // setloading(false);
     } catch (error) {
-      console.log(error);
       alert("Something went wrong. Try again later");
+    }
+    finally {
+      setloading(false)
     }
   };
   return (

@@ -1,5 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios"
 
 const EditProductModal = (props) => {
   const set = (event) => {
@@ -17,19 +18,17 @@ const EditProductModal = (props) => {
         window.history.replaceState(null, null, "/");
         return navigate("/", { replace: true });
       }
-      const response = await fetch(
-        "http://localhost:4010/api/updateproduct/" + props.id,
+      const response = await axios.put(
+        "http://localhost:4010/api/updateproduct/" + props.id,props.obj,
         {
-          method: "put",
-          body: JSON.stringify(props.obj),
+          // body: JSON.stringify(props.obj),
           headers: {
             "Content-Type": "application/json",
             Authorization: userinfo.Authorization,
           },
         }
       );
-      const result = await response.json();
-      alert(result?.message);
+      alert(response?.data?.message);
       if (response.status === 202) {
         await props.getallproducts(userinfo.Authorization);
         props.setToggle(false);
@@ -38,7 +37,6 @@ const EditProductModal = (props) => {
       }
       props.setloading(false);
     } catch (error) {
-      console.log(error);
       alert("Something went wrong. Try again later.");
     }
   };

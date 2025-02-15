@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios"
 
 const AddCustomerModal = (props) => {
   const [obj, setobj] = useState({});
@@ -18,16 +19,14 @@ const AddCustomerModal = (props) => {
         window.history.replaceState(null, null, "/");
         return navigate("/", { replace: true });
       }
-      const response = await fetch("http://localhost:4010/api/createCustomer", {
-        method: "post",
-        body: JSON.stringify(obj),
+      const response = await axios.post("http://localhost:4010/api/createCustomer",obj, {
+        // body: JSON.stringify(obj),
         headers: {
           "Content-Type": "application/json",
           Authorization: userinfo.Authorization,
         },
       });
-      const result = await response.json();
-      alert(result?.message);
+      alert(response?.data?.message);
       if (response.status === 201) {
         props.setToggle(false);
         await props.getallcustomers(userinfo.Authorization);
